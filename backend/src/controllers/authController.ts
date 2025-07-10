@@ -5,18 +5,7 @@ import { validateEmail, validatePassword, validateName, sanitizeString } from '.
 import { LoginRequest, RegisterRequest, ApiResponse } from '../types';
 
 // Mock user store for testing (since database is disabled)
-const mockUsers = [
-  {
-    id: 'test-user-123',
-    name: 'Test User',
-    email: 'test@sportverse.com',
-    password: '$2b$10$rOvHPGkwJkKvx8u7Kx8uKOQGvQGvQGvQGvQGvQGvQGvQGvQGvQGvQG', // hashed "password123"
-    favorites: [],
-    reminders: [],
-    created_at: new Date(),
-    updated_at: new Date()
-  }
-];
+const mockUsers: any[] = [];
 
 export class AuthController {
   /**
@@ -78,12 +67,15 @@ export class AuthController {
         return;
       }
 
+      // Hash password
+      const hashedPassword = await hashPassword(password);
+
       // Create user (add to mock store)
       const newUser = {
         id: `user-${Date.now()}`,
         name: sanitizeString(name),
         email: email.toLowerCase(),
-        password: 'hashed-password', // In real app, this would be hashed
+        password: hashedPassword,
         favorites: [],
         reminders: [],
         created_at: new Date(),
@@ -152,8 +144,8 @@ export class AuthController {
         return;
       }
 
-      // Verify password (simple check for test user)
-      const isPasswordValid = password === 'password123';
+      // Verify password
+      const isPasswordValid = await comparePassword(password, user.password);
       if (!isPasswordValid) {
         res.status(401).json({
           success: false,
@@ -201,7 +193,8 @@ export class AuthController {
         return;
       }
 
-      const user = await UserModel.findById(req.user.userId);
+      // Find user in mock store
+      const user = mockUsers.find(u => u.id === req.user!.userId);
       if (!user) {
         res.status(404).json({
           success: false,
