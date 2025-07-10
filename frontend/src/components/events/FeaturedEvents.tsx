@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FiTrendingUp, FiClock, FiMapPin, FiUsers, FiStar, FiChevronRight, FiPlay, FiRadio } from 'react-icons/fi';
 import Card from '../ui/Card';
 import Button from '../ui/Button';
+import { racesAPI } from '../../utils/api';
 
 interface FeaturedEvent {
   id: string;
@@ -20,81 +21,6 @@ interface FeaturedEvent {
   description: string;
 }
 
-const MOCK_EVENTS: FeaturedEvent[] = [
-  {
-    id: '1',
-    title: 'Monaco Grand Prix',
-    sport: { name: 'Formula 1', icon: '🏎️', color: '#e10600' },
-    status: 'live',
-    startTime: '2024-01-15T14:00:00Z',
-    location: 'Monaco',
-    participants: ['Max Verstappen', 'Lewis Hamilton', 'Charles Leclerc'],
-    viewers: 2500000,
-    importance: 'high',
-    description: 'The most prestigious race in Formula 1 calendar'
-  },
-  {
-    id: '2',
-    title: 'Champions League Final',
-    sport: { name: 'Football', icon: '⚽', color: '#00aa00' },
-    status: 'upcoming',
-    startTime: '2024-01-15T20:00:00Z',
-    location: 'Wembley Stadium',
-    participants: ['Manchester City', 'Real Madrid'],
-    viewers: 1800000,
-    importance: 'high',
-    description: 'The ultimate showdown in European football'
-  },
-  {
-    id: '3',
-    title: 'NBA Finals Game 7',
-    sport: { name: 'Basketball', icon: '🏀', color: '#ff6600' },
-    status: 'upcoming',
-    startTime: '2024-01-16T02:00:00Z',
-    location: 'TD Garden',
-    participants: ['Boston Celtics', 'Los Angeles Lakers'],
-    viewers: 1200000,
-    importance: 'high',
-    description: 'Winner takes all in this decisive game'
-  },
-  {
-    id: '4',
-    title: 'Wimbledon Men\'s Final',
-    sport: { name: 'Tennis', icon: '🎾', color: '#32cd32' },
-    status: 'upcoming',
-    startTime: '2024-01-16T14:00:00Z',
-    location: 'All England Club',
-    participants: ['Novak Djokovic', 'Carlos Alcaraz'],
-    viewers: 800000,
-    importance: 'medium',
-    description: 'The most prestigious tennis tournament'
-  },
-  {
-    id: '5',
-    title: 'MotoGP Catalunya',
-    sport: { name: 'MotoGP', icon: '🏍️', color: '#0066cc' },
-    status: 'completed',
-    startTime: '2024-01-14T13:00:00Z',
-    location: 'Circuit de Barcelona-Catalunya',
-    participants: ['Francesco Bagnaia', 'Jorge Martin', 'Marc Marquez'],
-    viewers: 600000,
-    importance: 'medium',
-    description: 'Thrilling race in the Spanish countryside'
-  },
-  {
-    id: '6',
-    title: 'UFC 300 Main Event',
-    sport: { name: 'MMA', icon: '🥋', color: '#8b0000' },
-    status: 'upcoming',
-    startTime: '2024-01-16T04:00:00Z',
-    location: 'T-Mobile Arena',
-    participants: ['Jon Jones', 'Stipe Miocic'],
-    viewers: 950000,
-    importance: 'high',
-    description: 'Heavyweight championship bout'
-  }
-];
-
 interface FeaturedEventsProps {
   onTeamRadioToggle?: () => void;
 }
@@ -102,10 +28,99 @@ interface FeaturedEventsProps {
 const FeaturedEvents: React.FC<FeaturedEventsProps> = ({ onTeamRadioToggle }) => {
   const [events, setEvents] = useState<FeaturedEvent[]>([]);
   const [filter, setFilter] = useState<'all' | 'live' | 'upcoming' | 'today'>('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setEvents(MOCK_EVENTS);
+    fetchEvents();
   }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setLoading(true);
+      const response = await racesAPI.getUpcomingRaces();
+      
+      if (response.success && response.data) {
+        // Convert races to featured events format
+        const featuredEvents: FeaturedEvent[] = response.data.map((race: any) => ({
+          id: race.id,
+          title: race.name,
+          sport: {
+            name: race.series?.name || 'Racing',
+            icon: race.series?.icon || '🏁',
+            color: race.series?.color || '#e10600'
+          },
+          status: getEventStatus(race.date),
+          startTime: race.date,
+          location: race.circuit || race.country,
+          participants: getParticipants(race.series?.name),
+          viewers: Math.floor(Math.random() * 2000000) + 500000, // Simulated viewers
+          importance: getImportance(race.name),
+          description: getDescription(race.name, race.series?.name)
+        }));
+        
+        setEvents(featuredEvents);
+      } else {
+        setError('Failed to load events');
+      }
+    } catch (err) {
+      setError('Failed to load events');
+      console.error('Error fetching events:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getEventStatus = (dateString: string): 'live' | 'upcoming' | 'completed' => {
+    const eventDate = new Date(dateString);
+    const now = new Date();
+    const timeDiff = eventDate.getTime() - now.getTime();
+    const hoursDiff = timeDiff / (1000 * 60 * 60);
+    
+    if (hoursDiff < 0) return 'completed';
+    if (hoursDiff < 3) return 'live'; // Consider live if within 3 hours
+    return 'upcoming';
+  };
+
+  const getParticipants = (seriesName?: string): string[] => {
+    const participants: { [key: string]: string[] } = {
+      'Formula 1': ['Max Verstappen', 'Lewis Hamilton', 'Charles Leclerc', 'Lando Norris'],
+      'NASCAR Cup Series': ['Kyle Larson', 'Chase Elliott', 'Denny Hamlin', 'Ryan Blaney'],
+      'MotoGP': ['Francesco Bagnaia', 'Jorge Martin', 'Marc Marquez', 'Enea Bastianini'],
+      'default': ['Leading Drivers', 'Top Competitors', 'Championship Contenders']
+    };
+    
+    return participants[seriesName || 'default'] || participants['default'];
+  };
+
+  const getImportance = (raceName: string): 'high' | 'medium' | 'low' => {
+    const highImportance = ['monaco', 'daytona', 'indianapolis', 'le mans', 'silverstone'];
+    const mediumImportance = ['bahrain', 'austria', 'singapore', 'australia'];
+    
+    const lowerName = raceName.toLowerCase();
+    if (highImportance.some(important => lowerName.includes(important))) return 'high';
+    if (mediumImportance.some(important => lowerName.includes(important))) return 'medium';
+    return 'low';
+  };
+
+  const getDescription = (raceName: string, seriesName?: string): string => {
+    const descriptions: { [key: string]: string } = {
+      'monaco': 'The most prestigious race in Formula 1 calendar',
+      'daytona': 'The Great American Race and NASCAR\'s biggest event',
+      'indianapolis': 'The Greatest Spectacle in Racing',
+      'le mans': 'The legendary 24-hour endurance race',
+      'silverstone': 'The home of British motorsport',
+      'bahrain': 'Season opener in the desert under lights',
+      'australia': 'The thrilling season opener Down Under',
+      'default': `Exciting ${seriesName || 'racing'} action awaits`
+    };
+    
+    const lowerName = raceName.toLowerCase();
+    for (const [key, desc] of Object.entries(descriptions)) {
+      if (lowerName.includes(key)) return desc;
+    }
+    return descriptions['default'];
+  };
 
   const filteredEvents = events.filter(event => {
     if (filter === 'all') return true;
@@ -165,6 +180,39 @@ const FeaturedEvents: React.FC<FeaturedEventsProps> = ({ onTeamRadioToggle }) =>
     }
     return viewers.toString();
   };
+
+  if (loading) {
+    return (
+      <section className="mb-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-f1-500 to-motogp-500 rounded-xl flex items-center justify-center animate-pulse">
+              <FiTrendingUp className="w-8 h-8 text-white" />
+            </div>
+            <p className="text-gray-400 font-sport">Loading featured events...</p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="mb-8">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center">
+              <FiTrendingUp className="w-8 h-8 text-white" />
+            </div>
+            <p className="text-red-400 font-sport mb-2">Failed to load events</p>
+            <Button variant="ghost" onClick={fetchEvents}>
+              Try Again
+            </Button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mb-8">

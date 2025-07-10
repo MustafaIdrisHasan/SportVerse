@@ -72,11 +72,11 @@ export const authAPI = {
   },
 };
 
-// Races API functions
+// Races API functions (using schedule endpoints for real data)
 export const racesAPI = {
   getAllRaces: async (): Promise<ApiResponse<Race[]>> => {
     try {
-      const response: AxiosResponse<ApiResponse<Race[]>> = await apiClient.get('/races');
+      const response: AxiosResponse<ApiResponse<Race[]>> = await apiClient.get('/schedule/races');
       return response.data;
     } catch (error: any) {
       return {
@@ -88,7 +88,7 @@ export const racesAPI = {
 
   getRaceById: async (id: string): Promise<ApiResponse<Race>> => {
     try {
-      const response: AxiosResponse<ApiResponse<Race>> = await apiClient.get(`/races/${id}`);
+      const response: AxiosResponse<ApiResponse<Race>> = await apiClient.get(`/schedule/races/${id}`);
       return response.data;
     } catch (error: any) {
       return {
@@ -100,12 +100,39 @@ export const racesAPI = {
 
   getUpcomingRaces: async (): Promise<ApiResponse<Race[]>> => {
     try {
-      const response: AxiosResponse<ApiResponse<Race[]>> = await apiClient.get('/races/upcoming');
+      const response: AxiosResponse<ApiResponse<Race[]>> = await apiClient.get('/schedule/races/upcoming');
       return response.data;
     } catch (error: any) {
       return {
         success: false,
         error: error.response?.data?.error || 'Failed to fetch upcoming races',
+      };
+    }
+  },
+};
+
+// Sync API functions for triggering data sync
+export const syncAPI = {
+  syncSport: async (sport: string): Promise<ApiResponse<any>> => {
+    try {
+      const response: AxiosResponse<ApiResponse<any>> = await apiClient.post(`/schedule/sync/${sport}`);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || `Failed to sync ${sport}`,
+      };
+    }
+  },
+
+  syncAll: async (): Promise<ApiResponse<any>> => {
+    try {
+      const response: AxiosResponse<ApiResponse<any>> = await apiClient.post('/schedule/sync/all');
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Failed to sync all sports',
       };
     }
   },

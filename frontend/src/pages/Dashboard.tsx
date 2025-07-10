@@ -39,6 +39,7 @@ const Dashboard: React.FC = () => {
         }
       } catch (err) {
         setError('Failed to load races. Please try again later.');
+        console.error('Error fetching races:', err);
       } finally {
         setLoading(false);
       }
@@ -51,72 +52,9 @@ const Dashboard: React.FC = () => {
     navigate(`/race/${raceId}`);
   };
 
-  // Mock data for development (remove when backend is ready)
-  const mockRaces: Race[] = [
-    {
-      id: '1',
-      name: 'Qatar Grand Prix',
-      date: '2024-03-10T15:00:00Z',
-      circuit: 'Lusail International Circuit',
-      country: 'Qatar',
-      seriesId: 'f1',
-      series: { id: 'f1', name: 'Formula 1', color: '#e10600', icon: '🏎️' },
-      schedule: [
-        { session: 'Practice 1', date: '2024-03-08', time: '11:30' },
-        { session: 'Practice 2', date: '2024-03-08', time: '15:00' },
-        { session: 'Practice 3', date: '2024-03-09', time: '11:30' },
-        { session: 'Qualifying', date: '2024-03-09', time: '15:00' },
-        { session: 'Race', date: '2024-03-10', time: '15:00' },
-      ],
-      watchLinks: [
-        { country: 'US', broadcaster: 'ESPN', subscription: false },
-        { country: 'UK', broadcaster: 'Sky Sports F1', subscription: true },
-        { country: 'Global', broadcaster: 'F1 TV Pro', subscription: true },
-      ],
-    },
-    {
-      id: '2',
-      name: 'Portimão Grand Prix',
-      date: '2024-03-24T14:00:00Z',
-      circuit: 'Algarve International Circuit',
-      country: 'Portugal',
-      seriesId: 'motogp',
-      series: { id: 'motogp', name: 'MotoGP', color: '#0066cc', icon: '🏍️' },
-      schedule: [
-        { session: 'Practice 1', date: '2024-03-22', time: '10:45' },
-        { session: 'Practice 2', date: '2024-03-22', time: '15:00' },
-        { session: 'Qualifying', date: '2024-03-23', time: '14:10' },
-        { session: 'Race', date: '2024-03-24', time: '14:00' },
-      ],
-      watchLinks: [
-        { country: 'US', broadcaster: 'NBC Sports', subscription: true },
-        { country: 'UK', broadcaster: 'BT Sport', subscription: true },
-      ],
-    },
-    {
-      id: '3',
-      name: '6 Hours of Spa-Francorchamps',
-      date: '2024-05-11T13:00:00Z',
-      circuit: 'Circuit de Spa-Francorchamps',
-      country: 'Belgium',
-      seriesId: 'wec',
-      series: { id: 'wec', name: 'WEC', color: '#ff8c00', icon: '🏁' },
-      schedule: [
-        { session: 'Practice 1', date: '2024-05-09', time: '14:00' },
-        { session: 'Practice 2', date: '2024-05-09', time: '18:00' },
-        { session: 'Qualifying', date: '2024-05-10', time: '15:00' },
-        { session: 'Race', date: '2024-05-11', time: '13:00' },
-      ],
-      watchLinks: [
-        { country: 'Global', broadcaster: 'Eurosport', subscription: true },
-        { country: 'US', broadcaster: 'MotorTrend', subscription: true },
-      ],
-    },
-  ];
-
-  // Use mock data if no real data is available
-  const displayUpcoming = upcomingRaces.length > 0 ? upcomingRaces : mockRaces;
-  const displayFeatured = featuredRaces.length > 0 ? featuredRaces : mockRaces.slice(0, 2);
+  // Use the fetched data directly since backend provides fallback data
+  const displayUpcoming = upcomingRaces;
+  const displayFeatured = featuredRaces;
 
   if (!isAuthenticated) {
     return (
