@@ -1,12 +1,28 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Header from './Header';
+import ResizableQuickTools from '../ui/ResizableQuickTools';
+import useAuthStore from '../../context/authStore';
 
 interface LayoutProps {
   children: React.ReactNode;
   showHeader?: boolean;
+  showSidebar?: boolean;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children, showHeader = true }) => {
+const Layout: React.FC<LayoutProps> = ({ children, showHeader = true, showSidebar = true }) => {
+  const [sidebarWidth, setSidebarWidth] = useState(320);
+  const [isSidebarVisible, setIsSidebarVisible] = useState(showSidebar);
+  const location = useLocation();
+  const { isAuthenticated } = useAuthStore();
+
+  // Hide sidebar on login/register pages or when not authenticated
+  useEffect(() => {
+    const hideSidebarPaths = ['/login', '/register', '/'];
+    const shouldHideSidebar = hideSidebarPaths.includes(location.pathname) || !isAuthenticated;
+    setIsSidebarVisible(showSidebar && !shouldHideSidebar);
+  }, [location.pathname, isAuthenticated, showSidebar]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-dark-50 via-gray-900 to-dark-100 text-white relative overflow-hidden">
       {/* Animated Background Elements */}
@@ -32,9 +48,29 @@ const Layout: React.FC<LayoutProps> = ({ children, showHeader = true }) => {
       {/* Main Content */}
       <div className="relative z-10">
         {showHeader && <Header />}
-        <main className={showHeader ? 'pt-0' : 'pt-16'}>
-          {children}
-        </main>
+        <div className="flex">
+          {/* Main Content Area */}
+          <main 
+            className={`flex-1 transition-all duration-300 ${showHeader ? 'pt-0' : 'pt-16'}`}
+            style={{
+              marginRight: isSidebarVisible ? `${sidebarWidth}px` : '0',
+              minHeight: 'calc(100vh - 64px)'
+            }}
+          >
+            {children}
+          </main>
+          
+          {/* Resizable Quick Tools Sidebar */}
+          {isAuthenticated && (
+            <ResizableQuickTools
+              isVisible={isSidebarVisible}
+              onWidthChange={setSidebarWidth}
+              defaultWidth={320}
+              minWidth={240}
+              maxWidth={600}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
