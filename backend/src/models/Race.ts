@@ -178,6 +178,161 @@ export class RaceModel {
   }
 
   /**
+   * Check if a race exists by name and date
+   */
+  static async findByNameAndDate(name: string, date: Date): Promise<Race | null> {
+    const query = `
+      SELECT r.*, s.name as series_name, s.color as series_color, s.icon as series_icon
+      FROM races r
+      LEFT JOIN series s ON r.series_id = s.id
+      WHERE LOWER(r.name) = LOWER($1) AND DATE(r.date) = DATE($2)
+    `;
+    
+    const result: QueryResult = await pool.query(query, [name, date]);
+    return result.rows[0] ? this.formatRaceWithSeries(result.rows[0]) : null;
+  }
+
+  /**
+   * Create race from scraped sports event data
+   */
+  static async createFromSportsEvent(eventData: {
+    sport: string;
+    event: string;
+    date: string; // YYYY-MM-DD
+    time: string; // HH:MM
+    location: string;
+    circuit?: string;
+    country?: string;
+  }): Promise<Race> {
+    // Get series ID based on sport
+    const seriesId = await this.getSeriesIdBySport(eventData.sport);
+    
+    // Convert date and time to full datetime
+    const eventDateTime = new Date(`${eventData.date}T${eventData.time}:00`);
+    
+    // Create schedule array
+    const schedule = [
+      {
+        session: 'Race',
+        date: eventData.date,
+        time: eventData.time
+      }
+    ];
+
+    // Create default watch links
+    const watchLinks = this.getDefaultWatchLinks(eventData.sport);
+
+    const raceData = {
+      name: eventData.event,
+      date: eventDateTime,
+      circuit: eventData.circuit || eventData.location,
+      country: eventData.country || this.extractCountryFromLocation(eventData.location),
+      series_id: seriesId,
+      schedule,
+      watch_links: watchLinks,
+    };
+
+    return this.create(raceData);
+  }
+
+  /**
+   * Get series ID by sport name
+   */
+  private static async getSeriesIdBySport(sport: string): Promise<string> {
+    const sportMappings: { [key: string]: string } = {
+      'F1': 'f1',
+      'NASCAR': 'nascar', 
+      'Rally': 'wrc',
+      'Cricket': 'cricket',
+      'Football': 'football'
+    };
+    
+    const seriesName = sportMappings[sport] || sport.toLowerCase();
+    
+    // Try to find existing series
+    const query = 'SELECT id FROM series WHERE LOWER(name) = $1 OR id = $1';
+    const result: QueryResult = await pool.query(query, [seriesName]);
+    
+    if (result.rows[0]) {
+      return result.rows[0].id;
+    }
+    
+    // Create new series if not found
+    const newSeriesId = uuidv4();
+    const insertQuery = `
+      INSERT INTO series (id, name, color, icon, created_at)
+      VALUES ($1, $2, $3, $4, NOW())
+      RETURNING id
+    `;
+    
+    const seriesData = this.getSeriesDefaults(sport);
+    const insertResult: QueryResult = await pool.query(insertQuery, [
+      newSeriesId,
+      seriesData.name,
+      seriesData.color,
+      seriesData.icon
+    ]);
+    
+    return insertResult.rows[0].id;
+  }
+
+  /**
+   * Get default series data by sport
+   */
+  private static getSeriesDefaults(sport: string) {
+    const defaults: { [key: string]: { name: string; color: string; icon: string } } = {
+      'F1': { name: 'Formula 1', color: '#e10600', icon: '🏎️' },
+      'NASCAR': { name: 'NASCAR', color: '#ffed00', icon: '🏁' },
+      'Rally': { name: 'WRC', color: '#0066cc', icon: '🚗' },
+      'Cricket': { name: 'Cricket', color: '#00a651', icon: '🏏' },
+      'Football': { name: 'Football', color: '#00471b', icon: '⚽' }
+    };
+    
+    return defaults[sport] || { name: sport, color: '#6b7280', icon: '🏆' };
+  }
+
+  /**
+   * Get default watch links by sport
+   */
+  private static getDefaultWatchLinks(sport: string): WatchLink[] {
+    const defaultLinks: { [key: string]: WatchLink[] } = {
+      'F1': [
+        { country: 'Global', broadcaster: 'F1 TV Pro', subscription: true },
+        { country: 'US', broadcaster: 'ESPN', subscription: false },
+        { country: 'UK', broadcaster: 'Sky Sports F1', subscription: true }
+      ],
+      'NASCAR': [
+        { country: 'US', broadcaster: 'FOX/NBC', subscription: false },
+        { country: 'US', broadcaster: 'NASCAR.com', subscription: true }
+      ],
+      'Rally': [
+        { country: 'Global', broadcaster: 'WRC+', subscription: true }
+      ],
+      'Cricket': [
+        { country: 'India', broadcaster: 'Star Sports', subscription: true },
+        { country: 'Global', broadcaster: 'ESPN+', subscription: true }
+      ],
+      'Football': [
+        { country: 'Global', broadcaster: 'ESPN+', subscription: true },
+        { country: 'UK', broadcaster: 'BBC/ITV', subscription: false }
+      ]
+    };
+    
+    return defaultLinks[sport] || [
+      { country: 'Global', broadcaster: 'TBD', subscription: false }
+    ];
+  }
+
+  /**
+   * Extract country from location string
+   */
+  private static extractCountryFromLocation(location: string): string {
+    // Simple extraction - can be enhanced
+    const parts = location.split(',');
+    return parts[parts.length - 1].trim();
+  }
+
+  /**
    * Format race data from database
    */
   private static formatRace(row: any): Race {

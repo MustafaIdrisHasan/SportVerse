@@ -1,0 +1,24 @@
+{
+  "name": "sportverse",
+  "version": "1.0.0",
+  "description": "RaceScope is a comprehensive full-stack web application for motor racing enthusiasts to track, plan, and watch races from Formula 1, MotoGP, Le Mans, and other major racing series.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && npm run dev",
+    "dev:frontend": "cd frontend && npm start",
+    "install:backend": "cd backend && npm install",
+    "install:frontend": "cd frontend && npm install",
+    "install:all": "npm install && npm run install:backend && npm run install:frontend",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:backend": "cd backend && npm run build",
+    "build:frontend": "cd frontend && npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["sportverse", "racing", "f1", "motorsport", "fullstack"],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.2"
+  }
+}

@@ -65,31 +65,65 @@ const Login: React.FC = () => {
 
   return (
     <Layout showHeader={false}>
-      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="w-full max-w-md space-y-8">
+      <div className="min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        {/* Racing Background Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Racing stripes */}
+          <div className="absolute top-1/4 left-0 w-full h-1 bg-gradient-to-r from-f1-500 via-motogp-500 to-lemans-500 opacity-30 transform -skew-y-12"></div>
+          <div className="absolute top-1/2 left-0 w-full h-1 bg-gradient-to-r from-lemans-500 via-accent-neon to-f1-500 opacity-30 transform skew-y-12"></div>
+          <div className="absolute top-3/4 left-0 w-full h-1 bg-gradient-to-r from-motogp-500 via-accent-purple to-lemans-500 opacity-30 transform -skew-y-12"></div>
+
+          {/* Floating elements */}
+          <div className="absolute top-20 left-10 w-32 h-32 bg-gradient-to-br from-f1-500/10 to-transparent rounded-full blur-xl animate-pulse-slow"></div>
+          <div className="absolute bottom-20 right-10 w-40 h-40 bg-gradient-to-br from-motogp-500/10 to-transparent rounded-full blur-xl animate-bounce-slow"></div>
+        </div>
+
+        <div className="w-full max-w-md space-y-8 relative z-10">
           {/* Header */}
           <div className="text-center">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-red-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">RS</span>
+            <div className="relative mx-auto mb-6">
+              <div className="w-20 h-20 bg-racing-gradient rounded-2xl flex items-center justify-center shadow-2xl shadow-f1-500/20 mx-auto">
+                <span className="text-white font-bold text-2xl font-racing">SV</span>
               </div>
+              <div className="absolute inset-0 w-20 h-20 bg-racing-gradient rounded-2xl blur-xl opacity-50 mx-auto animate-pulse-slow"></div>
             </div>
-            <h2 className="mt-6 text-3xl font-bold font-racing text-white">
-              Welcome back to RaceScope
+            <h2 className="text-4xl font-bold font-racing mb-2">
+              <span className="bg-gradient-to-r from-f1-500 via-accent-electric to-motogp-500 bg-clip-text text-transparent">
+                Welcome to SportVerse
+              </span>
             </h2>
-            <p className="mt-2 text-sm text-gray-400">
-              Sign in to your account to continue tracking races
+            <p className="text-lg text-gray-300 font-sport mb-2">
+              🏁 Ready to join the racing universe? 🏎️
+            </p>
+            <p className="text-sm text-gray-400">
+              Sign in to access exclusive racing content and live updates
             </p>
           </div>
 
           {/* Login Form */}
-          <Card className="mt-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {errors.general && (
-                <div className="bg-red-900/20 border border-red-500 rounded-lg p-3">
-                  <p className="text-sm text-red-400">{errors.general}</p>
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-f1-500/10 via-motogp-500/10 to-lemans-500/10 rounded-3xl blur-xl"></div>
+            <Card className="relative bg-gradient-to-br from-dark-100/90 to-dark-200/90 backdrop-blur-lg border-gray-600/50 shadow-2xl">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {errors.general && (
+                  <div className="bg-gradient-to-r from-f1-500/20 to-f1-600/20 border border-f1-500/50 rounded-xl p-4 shadow-neon-pink">
+                    <p className="text-sm text-f1-300 font-sport">{errors.general}</p>
+                  </div>
+                )}
+
+                {/* Demo Credentials Info */}
+                <div className="bg-gradient-to-r from-accent-neon/10 to-accent-electric/10 border border-accent-neon/30 rounded-xl p-4">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <div className="w-6 h-6 bg-gradient-to-r from-accent-neon to-accent-electric rounded-lg flex items-center justify-center">
+                      <span className="text-xs font-bold text-white">!</span>
+                    </div>
+                    <span className="text-sm font-sport font-semibold text-accent-neon">Demo Credentials</span>
+                  </div>
+                  <div className="text-xs text-gray-300 font-sport space-y-1">
+                    <div><strong>Email:</strong> test@sportverse.com</div>
+                    <div><strong>Password:</strong> password123</div>
+                  </div>
                 </div>
-              )}
 
               <Input
                 label="Email Address"
@@ -151,26 +185,40 @@ const Login: React.FC = () => {
                 type="submit"
                 variant="primary"
                 size="lg"
-                className="w-full"
+                className="w-full bg-racing-gradient hover:shadow-neon transform hover:scale-[1.02] transition-all duration-300 font-sport font-bold text-lg py-4"
                 isLoading={isLoading}
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Entering the Race...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center space-x-2">
+                    <span>🏁 Start Your Engines</span>
+                  </div>
+                )}
               </Button>
             </form>
           </Card>
+        </div>
 
           {/* Sign Up Link */}
           <div className="text-center">
-            <p className="text-sm text-gray-400">
-              Don't have an account?{' '}
-              <Link
-                to="/register"
-                className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
-              >
-                Sign up for free
-              </Link>
-            </p>
+            <div className="relative mb-4">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-gray-600/50 to-transparent h-px top-1/2"></div>
+              <div className="relative bg-dark-50 px-4">
+                <span className="text-sm text-gray-400 font-sport">New to the racing world?</span>
+              </div>
+            </div>
+            <Link
+              to="/register"
+              className="group inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-transparent to-transparent hover:from-motogp-500/20 hover:to-lemans-500/20 border border-gray-600 hover:border-motogp-500/50 rounded-xl transition-all duration-300 font-sport font-medium text-gray-300 hover:text-white"
+            >
+              <span>🏎️ Join the Race</span>
+              <div className="w-2 h-2 bg-motogp-500 rounded-full opacity-60 group-hover:opacity-100 transition-opacity"></div>
+            </Link>
           </div>
         </div>
       </div>

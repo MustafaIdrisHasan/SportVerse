@@ -11,9 +11,13 @@ import rateLimit from 'express-rate-limit';
 
 // Import routes
 import authRoutes from './routes/auth';
+import scheduleRoutes from './routes/schedule';
+
+// Import sync scheduler
+import { initializeSyncScheduler } from './jobs/syncScheduler';
 
 // Import database connection (this will test the connection)
-import './config/database';
+// import './config/database';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -69,6 +73,7 @@ app.get('/health', (req, res) => {
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/schedule', scheduleRoutes);
 
 // Mock race data endpoint (temporary for development)
 app.get('/api/races', (req, res) => {
@@ -172,7 +177,7 @@ app.get('/api/races/upcoming', (req, res) => {
 });
 
 // 404 handler
-app.use('*', (req, res) => {
+app.use((req, res) => {
   res.status(404).json({
     success: false,
     error: 'Route not found',
@@ -190,6 +195,9 @@ app.use((error: any, req: express.Request, res: express.Response, next: express.
       : error.message || 'Something went wrong',
   });
 });
+
+// Initialize sync scheduler
+initializeSyncScheduler();
 
 // Start server
 app.listen(PORT, () => {

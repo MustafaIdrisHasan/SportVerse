@@ -43,6 +43,7 @@ export interface Race {
   watch_links: WatchLink[];
   track_map?: string;
   weather?: WeatherInfo;
+  series?: Series;
   created_at: Date;
   updated_at: Date;
 }
@@ -102,4 +103,28 @@ export interface CreateRaceRequest {
   schedule: RaceSchedule[];
   watch_links: WatchLink[];
   track_map?: string;
-} 
+}
+
+export interface SportsEvent {
+  sport: string;
+  event: string;
+  date: string; // YYYY-MM-DD format
+  time: string; // HH:MM format in IST
+  location: string;
+  venue?: string;
+  teams?: string[];
+  status?: 'upcoming' | 'live' | 'completed';
+  round?: string;
+  circuit?: string;
+  country?: string;
+}
+
+export interface ScheduleResponse {
+  success: boolean;
+  data?: SportsEvent[];
+  message?: string;
+  error?: string;
+  sport?: string;
+}
+
+export type SupportedSports = 'f1' | 'nascar' | 'rally' | 'cricket' | 'football'; 

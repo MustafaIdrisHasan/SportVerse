@@ -160,99 +160,178 @@ const Dashboard: React.FC = () => {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold font-racing text-white mb-2">
-            Welcome back, {user?.name?.split(' ')[0]}!
-          </h1>
-          <p className="text-gray-400">
-            Here's what's happening in the world of racing
-          </p>
+        {/* Hero Welcome Section */}
+        <div className="relative mb-12 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-f1-500/20 via-motogp-500/20 to-lemans-500/20 rounded-3xl blur-xl"></div>
+          <div className="relative bg-gradient-to-br from-dark-100/80 to-dark-200/80 backdrop-blur-lg rounded-3xl p-8 border border-gray-600/30 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-16 h-16 bg-racing-gradient rounded-2xl flex items-center justify-center shadow-neon">
+                    <span className="text-2xl">🏁</span>
+                  </div>
+                  <div>
+                    <h1 className="text-4xl font-bold font-racing bg-gradient-to-r from-white via-accent-electric to-white bg-clip-text text-transparent mb-2">
+                      Welcome back, {user?.name?.split(' ')[0]}!
+                    </h1>
+                    <p className="text-lg text-gray-300 font-sport">
+                      Ready to dive into the world of high-speed racing? 🏎️💨
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-6 text-sm">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                    <span className="text-gray-300 font-sport">Live Updates Active</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="w-3 h-3 bg-accent-electric rounded-full animate-pulse"></div>
+                    <span className="text-gray-300 font-sport">{displayUpcoming.length} Upcoming Races</span>
+                  </div>
+                </div>
+              </div>
+              <div className="hidden lg:block">
+                <div className="w-32 h-32 bg-gradient-to-br from-accent-purple/30 to-accent-pink/30 rounded-full blur-2xl animate-pulse-slow"></div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Featured Races Carousel */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white flex items-center">
-              <FiTrendingUp className="mr-3 text-blue-400" />
-              Featured Races
-            </h2>
+        {/* Featured Races Section */}
+        <section className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-f1-500 to-motogp-500 rounded-xl flex items-center justify-center shadow-neon">
+                <FiTrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold font-racing bg-gradient-to-r from-f1-500 via-motogp-500 to-lemans-500 bg-clip-text text-transparent">
+                  🔥 Featured Races
+                </h2>
+                <p className="text-gray-400 font-sport">Don't miss these epic showdowns</p>
+              </div>
+            </div>
             <Button
               variant="ghost"
-              size="sm"
+              size="lg"
               onClick={() => navigate('/schedule')}
-              className="flex items-center"
+              className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-transparent to-transparent hover:from-accent-purple/20 hover:to-accent-pink/20 border border-gray-600 hover:border-accent-purple/50 rounded-xl transition-all duration-300"
             >
-              View All <FiChevronRight className="ml-1 w-4 h-4" />
+              <span className="font-sport font-medium">View All</span>
+              <FiChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayFeatured.map((race) => (
-              <div key={race.id} className="lg:col-span-1">
-                <RaceCard
-                  race={race}
-                  onClick={() => handleRaceClick(race.id)}
-                />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayFeatured.map((race, index) => (
+              <div
+                key={race.id}
+                className="group transform hover:scale-105 transition-all duration-300"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-f1-500/20 via-motogp-500/20 to-lemans-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  <RaceCard
+                    race={race}
+                    onClick={() => handleRaceClick(race.id)}
+                  />
+                </div>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Quick Stats */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-blue-400 mb-2">
-                {user?.favorites.length || 0}
+        {/* Racing Stats Dashboard */}
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-purple/20 to-accent-pink/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+            <Card className="relative bg-gradient-to-br from-dark-100/80 to-dark-200/80 backdrop-blur-lg border-accent-purple/30 hover:border-accent-purple/60 transition-all duration-300 transform group-hover:scale-105">
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-accent-purple to-accent-pink rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-neon-pink">
+                  <span className="text-2xl">❤️</span>
+                </div>
+                <div className="text-4xl font-bold font-racing bg-gradient-to-r from-accent-purple to-accent-pink bg-clip-text text-transparent mb-2">
+                  {user?.favorites.length || 0}
+                </div>
+                <div className="text-sm text-gray-300 font-sport font-medium">Favorite Races</div>
+                <div className="text-xs text-gray-500 mt-1">Your racing passion</div>
               </div>
-              <div className="text-sm text-gray-400">Favorite Races</div>
-            </div>
-          </Card>
-          
-          <Card>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-yellow-400 mb-2">
-                {user?.reminders.length || 0}
+            </Card>
+          </div>
+
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-lemans-500/20 to-nascar-500/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+            <Card className="relative bg-gradient-to-br from-dark-100/80 to-dark-200/80 backdrop-blur-lg border-lemans-500/30 hover:border-lemans-500/60 transition-all duration-300 transform group-hover:scale-105">
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-lemans-500 to-nascar-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-neon">
+                  <span className="text-2xl">🔔</span>
+                </div>
+                <div className="text-4xl font-bold font-racing bg-gradient-to-r from-lemans-500 to-nascar-500 bg-clip-text text-transparent mb-2">
+                  {user?.reminders.length || 0}
+                </div>
+                <div className="text-sm text-gray-300 font-sport font-medium">Active Reminders</div>
+                <div className="text-xs text-gray-500 mt-1">Never miss a race</div>
               </div>
-              <div className="text-sm text-gray-400">Active Reminders</div>
-            </div>
-          </Card>
-          
-          <Card>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-green-400 mb-2">
-                {displayUpcoming.length}
+            </Card>
+          </div>
+
+          <div className="group relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-accent-neon/20 to-accent-electric/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+            <Card className="relative bg-gradient-to-br from-dark-100/80 to-dark-200/80 backdrop-blur-lg border-accent-neon/30 hover:border-accent-neon/60 transition-all duration-300 transform group-hover:scale-105">
+              <div className="text-center p-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-accent-neon to-accent-electric rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-neon-green">
+                  <span className="text-2xl">🏁</span>
+                </div>
+                <div className="text-4xl font-bold font-racing bg-gradient-to-r from-accent-neon to-accent-electric bg-clip-text text-transparent mb-2">
+                  {displayUpcoming.length}
+                </div>
+                <div className="text-sm text-gray-300 font-sport font-medium">Upcoming Races</div>
+                <div className="text-xs text-gray-500 mt-1">Ready to race</div>
               </div>
-              <div className="text-sm text-gray-400">Upcoming Races</div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         </section>
 
-        {/* Upcoming Races */}
-        <section className="mb-12">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-white flex items-center">
-              <FiCalendar className="mr-3 text-green-400" />
-              Upcoming Races
-            </h2>
+        {/* Upcoming Races Section */}
+        <section className="mb-16">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-accent-neon to-accent-electric rounded-xl flex items-center justify-center shadow-neon-green">
+                <FiCalendar className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-3xl font-bold font-racing bg-gradient-to-r from-accent-neon via-accent-electric to-accent-neon bg-clip-text text-transparent">
+                  ⚡ Upcoming Races
+                </h2>
+                <p className="text-gray-400 font-sport">Get ready for the next adrenaline rush</p>
+              </div>
+            </div>
             <Button
               variant="ghost"
-              size="sm"
+              size="lg"
               onClick={() => navigate('/schedule')}
-              className="flex items-center"
+              className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-transparent to-transparent hover:from-accent-neon/20 hover:to-accent-electric/20 border border-gray-600 hover:border-accent-neon/50 rounded-xl transition-all duration-300"
             >
-              Full Schedule <FiChevronRight className="ml-1 w-4 h-4" />
+              <span className="font-sport font-medium">Full Schedule</span>
+              <FiChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {displayUpcoming.map((race) => (
-              <RaceCard
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {displayUpcoming.map((race, index) => (
+              <div
                 key={race.id}
-                race={race}
-                onClick={() => handleRaceClick(race.id)}
-              />
+                className="group transform hover:scale-105 transition-all duration-300"
+                style={{ animationDelay: `${index * 0.15}s` }}
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-accent-neon/20 via-accent-electric/20 to-accent-purple/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all duration-300"></div>
+                  <RaceCard
+                    race={race}
+                    onClick={() => handleRaceClick(race.id)}
+                  />
+                </div>
+              </div>
             ))}
           </div>
         </section>
